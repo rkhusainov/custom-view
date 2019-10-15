@@ -23,6 +23,7 @@ public class FinanceProgressView extends View {
     private static final int MAX_PROGRESS = 100;
     private static final int DEFAULT_COLOR = Color.RED;
     public static final float STROKE_WIDTH = 64;
+    public static final int REQUESTED_SIZE = 400;
 
     private int mProgress;
     private int mColor;
@@ -30,7 +31,7 @@ public class FinanceProgressView extends View {
 
     private Paint mCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private RectF mProgressRect = new RectF(0, 0, 700, 700);
+    private RectF mProgressRect = new RectF(0, 0, REQUESTED_SIZE-STROKE_WIDTH, REQUESTED_SIZE-STROKE_WIDTH);
     private Rect mTextBounds = new Rect();
 
 
@@ -47,7 +48,7 @@ public class FinanceProgressView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.translate(STROKE_WIDTH / 2, STROKE_WIDTH / 2);
+        canvas.translate(STROKE_WIDTH/2, STROKE_WIDTH/2);
         canvas.drawArc(mProgressRect, -90f, mProgress * MAX_ANGLE / MAX_PROGRESS, false, mCirclePaint);
         final String progressString = String.format(getResources().getString(R.string.progress_template), mProgress);
         mTextPaint.getTextBounds(progressString, 0, progressString.length(), mTextBounds);
@@ -56,6 +57,28 @@ public class FinanceProgressView extends View {
         canvas.drawText(progressString, x, y, mTextPaint)
         ;
     }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        Log.d(TAG, "onMeasure() called with: widthMeasureSpec = [" + MeasureSpec.toString(widthMeasureSpec) + "], heightMeasureSpec = [" + MeasureSpec.toString(heightMeasureSpec) + "]");
+        // длина и ширина родителя, лучше использовать resolveSize(), у него эти методы по капотом
+//        final int mode = MeasureSpec.getMode(widthMeasureSpec);
+//        final int size = MeasureSpec.getSize(widthMeasureSpec);
+
+        final int width = resolveSize(REQUESTED_SIZE, widthMeasureSpec);
+        final int height = resolveSize(REQUESTED_SIZE, heightMeasureSpec);
+
+        setMeasuredDimension(width, height);
+
+        // когда используем setMeasureDimension убираем super метод
+    }
+
+    /*@Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        Log.d(TAG, "onSizeChanged() called with: w= [" + w + "], h = [" + h + "], ");
+        mProgressRect.right = w - STROKE_WIDTH;
+        mProgressRect.bottom = h-STROKE_WIDTH;
+    }*/
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
         extractAttributes(context, attrs);
@@ -80,7 +103,7 @@ public class FinanceProgressView extends View {
             mColor = typedArray.getColor(R.styleable.FinanceProgressView_color, DEFAULT_COLOR);
             mTextSize = typedArray.getDimensionPixelSize(R.styleable.FinanceProgressView_textSize,
                     getResources().getDimensionPixelSize(R.dimen.default_text_size));
-            Log.d(TAG, "Progress= " + mProgress + ", " + "Color " + mColor + ", " + "textSize " + mTextSize);
+//            Log.d(TAG, "Progress= " + mProgress + ", " + "Color " + mColor + ", " + "textSize " + mTextSize);
         } finally {
             typedArray.recycle();
         }
