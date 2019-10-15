@@ -11,7 +11,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FinanceProgressView financeProgressView = findViewById(R.id.finance_progress);
-        financeProgressView.setProgress(75);
+        financeProgressView.setProgress(100);
 
     }
 }

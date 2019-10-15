@@ -23,7 +23,8 @@ public class FinanceProgressView extends View {
     private static final int MAX_PROGRESS = 100;
     private static final int DEFAULT_COLOR = Color.RED;
     public static final float STROKE_WIDTH = 64;
-    public static final int REQUESTED_SIZE = 400;
+
+    // 64/100
 
     private int mProgress;
     private int mColor;
@@ -31,9 +32,8 @@ public class FinanceProgressView extends View {
 
     private Paint mCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private RectF mProgressRect = new RectF(0, 0, REQUESTED_SIZE-STROKE_WIDTH, REQUESTED_SIZE-STROKE_WIDTH);
+    private RectF mProgressRect = new RectF();
     private Rect mTextBounds = new Rect();
-
 
     public FinanceProgressView(Context context) {
         super(context);
@@ -48,37 +48,49 @@ public class FinanceProgressView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.translate(STROKE_WIDTH/2, STROKE_WIDTH/2);
+
+        canvas.translate(STROKE_WIDTH / 2, STROKE_WIDTH / 2);
         canvas.drawArc(mProgressRect, -90f, mProgress * MAX_ANGLE / MAX_PROGRESS, false, mCirclePaint);
-        final String progressString = String.format(getResources().getString(R.string.progress_template), mProgress);
-        mTextPaint.getTextBounds(progressString, 0, progressString.length(), mTextBounds);
+        final String progressString = formatString(mProgress);
+        getTextBounds(progressString);
         float x = mProgressRect.width() / 2f - mTextBounds.width() / 2f - mTextBounds.left;
         float y = mProgressRect.height() / 2f + mTextBounds.height() / 2f - mTextBounds.bottom;
         canvas.drawText(progressString, x, y, mTextPaint)
         ;
     }
 
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Log.d(TAG, "onMeasure() called with: widthMeasureSpec = [" + MeasureSpec.toString(widthMeasureSpec) + "], heightMeasureSpec = [" + MeasureSpec.toString(heightMeasureSpec) + "]");
-        // длина и ширина родителя, лучше использовать resolveSize(), у него эти методы по капотом
-//        final int mode = MeasureSpec.getMode(widthMeasureSpec);
-//        final int size = MeasureSpec.getSize(widthMeasureSpec);
 
-        final int width = resolveSize(REQUESTED_SIZE, widthMeasureSpec);
-        final int height = resolveSize(REQUESTED_SIZE, heightMeasureSpec);
+        getTextBounds(formatString(MAX_PROGRESS));
+        final int size = (int) (Math.max(mTextBounds.width(), mTextBounds.height()) + Math.PI * STROKE_WIDTH);
+        final int width = resolveSize(size, widthMeasureSpec);
+        final int height = resolveSize(size, heightMeasureSpec);
+        mProgressRect.right = width - STROKE_WIDTH;
+        mProgressRect.bottom = height - STROKE_WIDTH;
+
 
         setMeasuredDimension(width, height);
 
         // когда используем setMeasureDimension убираем super метод
     }
 
-    /*@Override
+/*    @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        Log.d(TAG, "onSizeChanged() called with: w= [" + w + "], h = [" + h + "], ");
+        Log.d(TAG, "onSizeChanged() called with: w = [" + w + "], h = [" + h + "], oldw = [" + oldw + "], oldh = [" + oldh + "]");
         mProgressRect.right = w - STROKE_WIDTH;
         mProgressRect.bottom = h-STROKE_WIDTH;
     }*/
+
+    private void getTextBounds(String progressString) {
+        mTextPaint.getTextBounds(progressString, 0, progressString.length(), mTextBounds);
+    }
+
+    private String formatString(int progress) {
+        return String.format(getResources().getString(R.string.progress_template), progress);
+    }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
         extractAttributes(context, attrs);
@@ -103,7 +115,6 @@ public class FinanceProgressView extends View {
             mColor = typedArray.getColor(R.styleable.FinanceProgressView_color, DEFAULT_COLOR);
             mTextSize = typedArray.getDimensionPixelSize(R.styleable.FinanceProgressView_textSize,
                     getResources().getDimensionPixelSize(R.dimen.default_text_size));
-//            Log.d(TAG, "Progress= " + mProgress + ", " + "Color " + mColor + ", " + "textSize " + mTextSize);
         } finally {
             typedArray.recycle();
         }
