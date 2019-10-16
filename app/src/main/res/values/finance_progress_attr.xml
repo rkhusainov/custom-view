@@ -3,6 +3,8 @@
     <declare-styleable name="FinanceProgressView">
         <attr name="progress" format="integer" />
         <attr name="color" format="color" />
+        <attr name="backCircleColor" format="color" />
         <attr name="textSize" format="dimension" />
+        <attr name="strokeWidth" format="dimension" />
     </declare-styleable>
 </resources>
